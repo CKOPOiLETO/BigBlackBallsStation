@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -95,7 +96,73 @@ namespace BigBusStation
 
         }
 
+
+
+
         private void BtnSave_Click(object sender, RoutedEventArgs e)
+        {
+            // Валидация данных
+            if (!TimeSpan.TryParse(_viewModel.DepartureTime, out TimeSpan depTime) ||
+                !TimeSpan.TryParse(_viewModel.ArrivalTime, out TimeSpan arrTime))
+            {
+                MessageBox.Show("Укажите время в формате ЧЧ:ММ");
+                return;
+            }
+
+            if (_viewModel.SelectedBus == null)
+            {
+                MessageBox.Show("Выберите автобус");
+                return;
+            }
+
+            var context = BusTicketDBEntities1.GetContext();
+
+            try
+            {
+                // Сохранение маршрута
+                if (!_viewModel.IsEditMode)
+                {
+                    // Генерация ID для нового маршрута
+                    _viewModel.Route.Id = context.Routes.Any() ?
+                        context.Routes.Max(r => r.Id) + 1 : 1;
+                    context.Routes.Add(_viewModel.Route);
+                }
+                else
+                {
+                    context.Entry(_viewModel.Route).State = EntityState.Modified;
+                }
+
+                // Работа с расписанием
+                var schedule = _viewModel.Schedule;
+                schedule.DepartureTime = depTime;
+                schedule.ArrivalTime = arrTime;
+                schedule.BusId = _viewModel.SelectedBus.Id;
+                schedule.RouteID = _viewModel.Route.Id;
+
+                if (!_viewModel.IsEditMode)
+                {
+                    // Генерация ID для нового расписания
+                    schedule.Id = context.Schedules.Any() ?
+                        context.Schedules.Max(s => s.Id) + 1 : 1;
+                    context.Schedules.Add(schedule);
+                }
+                else
+                {
+                    context.Entry(schedule).State = EntityState.Modified;
+                }
+
+                // Явное сохранение
+                context.SaveChanges();
+                MessageBox.Show("Данные успешно сохранены!");
+                Manager.MainFrame.GoBack();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка сохранения: {ex.InnerException?.Message ?? ex.Message}");
+            }
+        }
+
+        /*private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
 
             StringBuilder errors = new StringBuilder();
@@ -148,7 +215,7 @@ namespace BigBusStation
             {
                 MessageBox.Show($"Ошибка сохранения: {ex.Message}");
             }
-        }
+        }*/
     }
 }
 
