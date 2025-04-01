@@ -92,10 +92,12 @@ namespace BigBusStation
 
             _viewModel = new RouteViewModel(selectedRoute);
             DataContext = _viewModel;
+
         }
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
+
             StringBuilder errors = new StringBuilder();
 
             if (string.IsNullOrWhiteSpace(_viewModel.Route.DepartuePoint))

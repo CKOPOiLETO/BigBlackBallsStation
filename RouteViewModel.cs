@@ -16,10 +16,12 @@ namespace BigBusStation
         public string ArrivalTime { get; set; }
         public bool IsEditMode { get; set; }
 
+
         public RouteViewModel(Routes selectedRoute)
         {
             var context = BusTicketDBEntities1.GetContext();
             Buses = context.Buses.ToList();
+
 
             if (selectedRoute != null)
             {
@@ -42,6 +44,7 @@ namespace BigBusStation
                 ArrivalTime = "12:00";
                 IsEditMode = false;
             }
+            Schedule = context.Schedules.FirstOrDefault(s => s.RouteID == Route.Id) ?? new Schedules();
         }
     }
 }
