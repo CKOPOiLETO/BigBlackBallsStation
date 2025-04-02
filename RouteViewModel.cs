@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.Entity;
+using BigBusStation;
 
 namespace BigBusStation
 {
@@ -86,13 +87,44 @@ namespace BigBusStation
             }
         }
 
+        public List<Buses> Buses { get; }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public RouteViewModel(Routes route = null)
+        /*public RouteViewModel(Routes route = null)
         {
             _context = BusTicketDBEntities1.GetContext();
             InitializeCollections();
             LoadRouteData(route);
+        }*/
+        public RouteViewModel(Routes selectedRoute)
+        {
+            var context = BusTicketDBEntities1.GetContext();
+            Buses = context.Buses.ToList();
+
+
+            if (selectedRoute != null)
+            {
+                Route = selectedRoute;
+                Schedule = context.Schedules.FirstOrDefault(s => s.RouteID == Route.Id);
+                SelectedBus = Schedule?.Buses;
+                IsEditMode = true;
+
+                if (Schedule != null)
+                {
+                    DepartureTime = Schedule.DepartureTime.ToString(@"hh\:mm");
+                    ArrivalTime = Schedule.ArrivalTime.ToString(@"hh\:mm");
+                }
+            }
+            else
+            {
+                Route = new Routes();
+                Schedule = new Schedules();
+                DepartureTime = "08:00";
+                ArrivalTime = "12:00";
+                IsEditMode = false;
+            }
+            Schedule = context.Schedules.FirstOrDefault(s => s.RouteID == Route.Id) ?? new Schedules();
         }
 
         private void InitializeCollections()
